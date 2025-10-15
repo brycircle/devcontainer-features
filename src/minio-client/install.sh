@@ -18,11 +18,7 @@ check_packages() {
 
 set -e
 
-export MINIO_PATH=${INSTALLPATH:-"/usr/local/bin/mc"}
-export MINIO_VENDOR=${VENDOR:-"linux"}
-
-if [ -z "${ARCHITECTURE+x}" ]
-then
+if [[ -n "${ARCHITECTURE}" ]]; then
     MINIO_ARCH=${ARCHITECTURE}
 else
     case `uname -m` in
@@ -34,10 +30,20 @@ else
             MINIO_ARCH=`uname -m`;;
     esac
 fi
-export MINIO_ARCH
-echo "Arch is ${MINIO_ARCH}"
 
-DOWNLOAD_PATH="https://dl.min.io/client/mc/release/${MINIO_VENDOR}-${MINIO_ARCH}/"
+if [[ -z "${VERSION}" ]]; then
+    MINIO_DL_BINARY="mc"
+else
+    MINIO_DL_BINARY="mc.RELEASE.${VERSION}"
+    echo "Version is ${VERSION}"
+fi
+
+export MINIO_PATH=${INSTALLPATH:-"/usr/local/bin/mc"}
+export MINIO_VENDOR=${VENDOR:-"linux"}
+export MINIO_ARCH
+export MINIO_DL_BINARY
+
+export DOWNLOAD_PATH="https://dl.min.io/client/mc/release/${MINIO_VENDOR}-${MINIO_ARCH}/"
 
 # Ensure apt is in non-interactive to avoid prompts
 export DEBIAN_FRONTEND=noninteractive
@@ -45,8 +51,11 @@ export DEBIAN_FRONTEND=noninteractive
 echo "Activating feature 'minio-client'"
 check_packages apt-transport-https curl ca-certificates
 
-RELEASE_HASH=$(curl -sL "${DOWNLOAD_PATH}/mc.sha256sum")
+RELEASE_HASH=$(curl -sL "${DOWNLOAD_PATH}/${MINIO_DL_BINARY}.sha256sum")
 RELEASE_FILE=${RELEASE_HASH#* }
+
+
+sleep 10
 
 curl -sLO "${DOWNLOAD_PATH}/${RELEASE_FILE}"
 if [[ $(sha256sum --check <<< "${RELEASE_HASH}") = "${RELEASE_FILE}: OK" ]]; then
