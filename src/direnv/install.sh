@@ -9,7 +9,7 @@ INSTALL_PATH=${INSTALLPATH:-"/usr/local/bin/direnv"}
 
 # Install required packages using whichever package manager is available
 if command -v apk >/dev/null 2>&1; then
-    apk add --no-cache curl ca-certificates
+    apk add --no-cache bash curl ca-certificates
 elif command -v apt-get >/dev/null 2>&1; then
     export DEBIAN_FRONTEND=noninteractive
     if [ "$(find /var/lib/apt/lists/* 2>/dev/null | wc -l)" = "0" ]; then
@@ -39,12 +39,12 @@ if [ "${AUTO_ENABLE}" = "true" ]; then
     BASHRC="${_REMOTE_USER_HOME}/.bashrc"
     ZSHRC="${_REMOTE_USER_HOME}/.zshrc"
 
-    if [ -f "${BASHRC}" ] && [ -z "$(grep _direnv_hook "${BASHRC}" 2>/dev/null)" ]; then
+    if ! grep -q "_direnv_hook" "${BASHRC}" 2>/dev/null; then
         echo "Adding direnv hook to ${BASHRC}"
         direnv hook bash >> "${BASHRC}"
     fi
 
-    if [ -f "${ZSHRC}" ] && [ -z "$(grep _direnv_hook "${ZSHRC}" 2>/dev/null)" ]; then
+    if command -v zsh >/dev/null 2>&1 && ! grep -q "_direnv_hook" "${ZSHRC}" 2>/dev/null; then
         echo "Adding direnv hook to ${ZSHRC}"
         direnv hook zsh >> "${ZSHRC}"
     fi
