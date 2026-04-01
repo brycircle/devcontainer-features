@@ -12,10 +12,10 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        features: ["easy-container-hooks", "direnv", "mcfly", "minio-client"]
         baseImage:
           - debian:latest
           - ubuntu:latest
+          - alpine:latest
           - mcr.microsoft.com/devcontainers/base:ubuntu
     steps:
       - uses: actions/checkout@v4
